@@ -54,7 +54,7 @@ def build_post(md_file):
     
     # Replace meta (date and author)
     template = re.sub(r'<div class="post-meta">\s*<a href="/">[^<]*</a> · [^<]*</div>', 
-                     f'<div class="post-meta"><a href="/">&lt;smarmellator&gt;</a> · {date}</div>', template)
+                     f'<div class="post-meta"><a href="/">&lt;matteodimario&gt;</a> · {date}</div>', template)
     
     # Replace post content - find the exact pattern
     # Find post-content div and replace everything inside it until back-link
