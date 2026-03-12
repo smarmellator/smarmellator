@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matt Levine Money Stuff newsletter dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #48dbfb, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            color: #888;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: #48dbfb;
+        }
+        
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .bar-label {
+            min-width: 150px;
+            font-size: 0.9rem;
+        }
+        
+        .bar-container {
+            flex: 1;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bar {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+        
+        .bar-tesla { background: linear-gradient(180deg, #48dbfb, #0abde3); }
+        .bar-meta { background: linear-gradient(180deg, #48dbfb, #0abde3); }
+        .bar-bitcoin { background: linear-gradient(180deg, #48dbfb, #0abde3); }
+        .bar-ethereum { background: linear-gradient(180deg, #48dbfb, #0abde3); }
+        .bar-memecoin { background: linear-gradient(180deg, #48dbfb, #0abde3); }
+        .bar-default { background: linear-gradient(180deg, #48dbfb, #0abde3); }
+        
+        .vertical-bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 250px;
+            padding: 20px 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            gap: 8px;
+        }
+        
+        .vertical-bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            height: 100%;
+            justify-content: flex-end;
+        }
+        
+        .vertical-bar {
+            width: 100%;
+            border-radius: 6px 6px 0 0;
+            transition: height 0.5s ease;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+        
+        .vertical-bar-label {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: #888;
+            text-align: center;
+        }
+        
+        .word-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .word {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .word:hover {
+            background: rgba(72, 219, 251, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .word.size-1 { font-size: 0.8rem; }
+        .word.size-2 { font-size: 1rem; }
+        .word.size-3 { font-size: 1.2rem; }
+        .word.size-4 { font-size: 1.5rem; }
+        .word.size-5 { font-size: 1.8rem; }
+        
+        .footnote-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .footnote-stat {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            min-width: 150px;
+        }
+        
+        .footnote-stat .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #feca57;
+        }
+        
+        .footnote-stat .label {
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .trend-chart {
+            margin-bottom: 30px;
+        }
+        
+        .trend-chart h3 {
+            color: #feca57;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        .takeaways {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .takeaways h2 {
+            color: #feca57;
+            margin-bottom: 20px;
+        }
+        
+        .takeaway-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid #48dbfb;
+        }
+        
+        .takeaways ol {
+            padding-left: 20px;
+        }
+        
+        .takeaways li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Matt Levine Newsletter Dashboard</h1>
+        <p class="subtitle">Stats from "Money Stuff" in 2025</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="boring-issues">0</div>
+                <div class="stat-label">Boring Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="saylor-mentions">0</div>
+                <div class="stat-label">Michael Saylor Mentions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="ackman-mentions">0</div>
+                <div class="stat-label">Friend of the pod Bill Ackman Mentions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-words">0</div>
+                <div class="stat-label">Avg Words per Issue</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-issues">0</div>
+                <div class="stat-label">Number of Issues</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Top Companies Mentioned</h2>
+            <div class="bar-chart" id="top-companies"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Matt's Favorite Cryptos</h2>
+            <div class="bar-chart" id="top-crypto"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Average Word Count by Month (2025)</h2>
+            <div class="vertical-bar-chart" id="monthly-words"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Most Common Words</h2>
+            <div class="word-cloud" id="word-cloud"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Footnote Stats</h2>
+            <div class="footnote-stats">
+                <div class="footnote-stat">
+                    <div class="value" id="total-footones">0</div>
+                    <div class="label">Total Footnotes</div>
+                </div>
+                <div class="footnote-stat">
+                    <div class="value" id="avg-footones">0</div>
+                    <div class="label">Avg Footnotes per Issue</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Trends</h2>
+            
+            <div class="trend-chart">
+                <h3>Kalshi Mentions</h3>
+                <div class="vertical-bar-chart" id="kalshi-chart"></div>
+            </div>
+            
+            <div class="trend-chart">
+                <h3>Polymarket Mentions</h3>
+                <div class="vertical-bar-chart" id="polymarket-chart"></div>
+            </div>
+            
+            <div class="trend-chart">
+                <h3>"Securities Fraud" Mentions</h3>
+                <div class="vertical-bar-chart" id="fraud-chart"></div>
+            </div>
+        </div>
+        
+        <div class="takeaways">
+            <h2>Takeaways</h2>
+            <ol>
+                <li>It is very impressive how consistent is the average word count of Matt's newsletter. I wonder if he has a target or just randonly ends up being this consistent. Sounds like there should be a kalshi bet (excuse me, prediction) on this.</li>
+                <li>Interesting how Kalshi and Polymarket are a lot less correlated than I thought. But also interesting how they kind of arrived all of a suddent and then in bursts. It seems two years ago that he started talking about them, but it was just this August.</li>
+                <li>Securities fraud "clearly" have a cyclic trend. So if you have any interest in committing a fraud your best opportunity might be in the summer so that you might not recieve Matt's coverage.</li>
+                <li>I guess he didn't do it on purpose but pretty cool he had 999 footnotes for the year.</li>
+                <li>It would be interesting to do some comparison with previous years to see how the stats evolved over time.</li>
+            </ol>
+            <h2 style="margin-top: 30px;">Disclosure</h2>
+            Please take the stats with caution becuase there might be errors.
+            In particular there might be errors of data parsing, data cleaning, etc. which can affect the statistics. It is intended for informational purposes only. If you want to refine the code yourself you can do so at [link]
+        </div>
+        
+        <footer>
+            Data extracted from Matt Levine's "Money Stuff" newsletter (2025 only)
+        </footer>
+    </div>
+    
+    <script>
+        fetch('newsletter_data.json')
+            .then(response => response.json())
+            .then(data => {
+        
+        function animateValue(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = Math.floor(progress * (end - start) + start);
+                element.textContent = value.toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+        
+        animateValue(document.getElementById('boring-issues'), 0, data.boring_issues, 1000);
+        animateValue(document.getElementById('saylor-mentions'), 0, data.saylor_mentions, 1000);
+        animateValue(document.getElementById('ackman-mentions'), 0, data.ackman_mentions, 1000);
+        animateValue(document.getElementById('avg-words'), 0, data.avg_words, 1000);
+        animateValue(document.getElementById('total-issues'), 0, data.total_issues, 1000);
+        animateValue(document.getElementById('total-footones'), 0, data.total_footones, 1000);
+        
+        const avgFootonesEl = document.getElementById('avg-footones');
+        avgFootonesEl.textContent = data.avg_footones.toFixed(1);
+        
+        // Top companies
+        const companiesContainer = document.getElementById('top-companies');
+        const maxCompany = Math.max(...Object.values(data.top_companies));
+        
+        Object.entries(data.top_companies).slice(0, 10).forEach(([company, count]) => {
+            const percentage = (count / maxCompany) * 100;
+            
+            const item = document.createElement('div');
+            item.className = 'bar-item';
+            item.innerHTML = `
+                <div class="bar-label">${company}</div>
+                <div class="bar-container">
+                    <div class="bar bar-default" style="width: ${percentage}%">${count.toLocaleString()}</div>
+                </div>
+            `;
+            companiesContainer.appendChild(item);
+        });
+        
+        // Crypto chart
+        const cryptoContainer = document.getElementById('top-crypto');
+        if (data.top_crypto) {
+            const maxCrypto = Math.max(...Object.values(data.top_crypto));
+            
+            Object.entries(data.top_crypto).slice(0, 5).forEach(([crypto, count]) => {
+                const percentage = (count / maxCrypto) * 100;
+                
+                const item = document.createElement('div');
+                item.className = 'bar-item';
+                item.innerHTML = `
+                    <div class="bar-label">${crypto}</div>
+                    <div class="bar-container">
+                        <div class="bar bar-default" style="width: ${percentage}%">${count.toLocaleString()}</div>
+                    </div>
+                `;
+                cryptoContainer.appendChild(item);
+            });
+        }
+        
+        // Monthly word counts (vertical bars)
+        const monthlyContainer = document.getElementById('monthly-words');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const sortedMonths = Object.keys(data.monthly_avg_words).sort();
+        const maxWords = Math.max(...Object.values(data.monthly_avg_words));
+        
+        sortedMonths.forEach(month => {
+            const count = data.monthly_avg_words[month];
+            const percentage = (count / maxWords) * 100;
+            const [year, monthNum] = month.split('-');
+            const monthName = monthNames[parseInt(monthNum) - 1];
+            
+            const item = document.createElement('div');
+            item.className = 'vertical-bar-item';
+            item.innerHTML = `
+                <div class="vertical-bar bar-default" style="height: ${percentage}%">${Math.round(count)}</div>
+                <div class="vertical-bar-label">${monthName}</div>
+            `;
+            monthlyContainer.appendChild(item);
+        });
+        
+        // Word cloud
+        const wordContainer = document.getElementById('word-cloud');
+        const wordCounts = Object.values(data.top_words);
+        const maxWordsCloud = Math.max(...wordCounts);
+        const minWordsCloud = Math.min(...wordCounts);
+        
+        Object.entries(data.top_words).slice(0, 40).forEach(([word, count]) => {
+            const size = Math.ceil(((count - minWordsCloud) / (maxWordsCloud - minWordsCloud)) * 4) + 1;
+            const span = document.createElement('span');
+            span.className = `word size-${size}`;
+            span.textContent = word;
+            wordContainer.appendChild(span);
+        });
+        
+        // Trend charts
+        function renderTrendChart(containerId, dataObj, color) {
+            const container = document.getElementById(containerId);
+            const sortedMonths = Object.keys(dataObj).sort();
+            const maxVal = Math.max(...Object.values(dataObj), 1);
+            
+            sortedMonths.forEach(month => {
+                const count = dataObj[month];
+                const percentage = (count / maxVal) * 100;
+                const [year, monthNum] = month.split('-');
+                const monthName = monthNames[parseInt(monthNum) - 1];
+                
+                const item = document.createElement('div');
+                item.className = 'vertical-bar-item';
+                item.innerHTML = `
+                    <div class="vertical-bar" style="height: ${Math.max(percentage, 5)}%; background: ${color}">${count}</div>
+                    <div class="vertical-bar-label">${monthName}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        if (data.monthly_kalshi) {
+            renderTrendChart('kalshi-chart', data.monthly_kalshi, 'linear-gradient(180deg, #ff6b6b, #ee5a5a)');
+        }
+        
+        if (data.monthly_polymarket) {
+            renderTrendChart('polymarket-chart', data.monthly_polymarket, 'linear-gradient(180deg, #a29bfe, #6c5ce7)');
+        }
+        
+        if (data.monthly_securities_fraud) {
+            renderTrendChart('fraud-chart', data.monthly_securities_fraud, 'linear-gradient(180deg, #feca57, #ff9f43)');
+        }
+            });
+    </script>
+</body>
+</html>
